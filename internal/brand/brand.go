@@ -26,26 +26,26 @@ const (
 	// letters, digits, spaces, hyphens and full stops, starting with a
 	// letter or digit, with one space at most between words. Every place
 	// that shows it fits a name that long.
-	Name = "Irie"
+	Name = "Pesto"
 	// Slug is its name for computers: lower-case letters, digits and
 	// hyphens, starting with a letter.
-	Slug = "irie"
+	Slug = "pesto"
 	// EnvPrefix starts the name of each environment variable it sets or
 	// reads: Slug in capitals, with underscores for hyphens.
-	EnvPrefix = "IRIE"
+	EnvPrefix = "PESTO"
 	// BundleID is the Mac app's bundle identifier. The core uses it to find
 	// the app, and the lid's launchd job is named after it.
-	BundleID = "io.github.irie-hq.irie"
+	BundleID = "com.example.pesto"
 	// Site is the guide's address, ending in a slash.
-	Site = "https://irie-people.github.io/irie/"
+	Site = "https://pesto.example.com/"
 	// Repo is the source's address, for credits and links.
-	Repo = "https://github.com/irie-people/irie"
+	Repo = "https://example.com/pesto"
 	// Tagline is the line under the name on the Mac app's welcome.
-	Tagline = "Everything irie."
+	Tagline = "Fresh basil for your agents."
 	// Bar is what the strip under the terminal shows unless ui.bar says
 	// otherwise: "cheer", Irie's phrases of encouragement, or "tips",
 	// tips for those new to it.
-	Bar = "cheer"
+	Bar = "tips"
 	// Tags are the go build tags the scripts build it with (tools/live.sh,
 	// tools/release.sh), comma-separated: novpn, noprivacy, nowriting,
 	// nomarkets, nomail, nobitwarden, noterms, noextension, noyoink, nochat,
@@ -53,7 +53,7 @@ const (
 	// (DESIGN §4.17), as a company's copy may want.
 	// A build by hand passes them itself: go build -tags "$(tools/brand.sh
 	// --tags)" ./cmd/irie.
-	Tags = ""
+	Tags = "noprivacy,nowriting,nomarkets,nomail,noterms,noextension,noyoink,nofounding,nojammin"
 	// VPNs are the VPNs it drives (DESIGN §4.18), comma-separated, the
 	// first the default for vpn.provider: mullvad, tailscale, netbird,
 	// warp, nordvpn, cisco, globalprotect, forticlient, system and
@@ -61,11 +61,11 @@ const (
 	// all, Mullvad first. A company's copy names the VPN it approves, such
 	// as "cisco", so its people see and drive that VPN and no other; a
 	// copy that names any shows its VPN from the start (vpn.on).
-	VPNs = ""
+	VPNs = "cisco"
 	// VPNServer is vpn.server's default: the host, portal or VPN by name
 	// that a company's VPN connects to, so its people set nothing. "" =
 	// none.
-	VPNServer = ""
+	VPNServer = "vpn.example.com"
 )
 
 // MaxName is the most characters Name may have.

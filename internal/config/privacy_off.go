@@ -1,5 +1,3 @@
-//go:build noprivacy
-
 package config
 
 // PrivacyBuilt says whether this build has the privacy plugin (DESIGN

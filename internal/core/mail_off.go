@@ -1,5 +1,3 @@
-//go:build nomail
-
 package core
 
 import "github.com/irie-people/irie/internal/ipc"

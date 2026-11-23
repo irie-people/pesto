@@ -1,5 +1,3 @@
-//go:build nowriting
-
 package main
 
 // This build leaves the writing plugin out (go build -tags nowriting,

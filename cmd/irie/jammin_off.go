@@ -1,5 +1,3 @@
-//go:build nojammin
-
 package main
 
 // This build leaves the jammin plugin out (go build -tags nojammin, DESIGN

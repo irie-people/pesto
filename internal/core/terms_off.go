@@ -1,5 +1,3 @@
-//go:build noterms
-
 package core
 
 import "context"

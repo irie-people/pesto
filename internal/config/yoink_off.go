@@ -1,5 +1,3 @@
-//go:build noyoink
-
 package config
 
 // YoinkBuilt says whether this build has the yoink plugin (DESIGN §4.17);

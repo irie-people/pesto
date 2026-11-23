@@ -24,12 +24,6 @@ import SwiftUI
 /// (PluginPanes.swift): SideState.pane says which.
 enum SideTab: String, CaseIterable, Identifiable {
     case dock, changes, helpers, plan, review, notices
-    #if !NOMAIL
-    case mail
-    #endif
-    #if !NOWRITING
-    case variorum
-    #endif
     case plugin
 
     var id: String { rawValue }
@@ -42,12 +36,6 @@ enum SideTab: String, CaseIterable, Identifiable {
         case .plan: return "Plan"
         case .review: return "Review"
         case .notices: return "Notices"
-        #if !NOMAIL
-        case .mail: return "Mail"
-        #endif
-        #if !NOWRITING
-        case .variorum: return "Variorum"
-        #endif
         case .plugin: return "Plugin"
         }
     }
@@ -61,12 +49,6 @@ enum SideTab: String, CaseIterable, Identifiable {
         case .plan: return "list.bullet"
         case .review: return "checkmark.circle"
         case .notices: return "bell"
-        #if !NOMAIL
-        case .mail: return "envelope"
-        #endif
-        #if !NOWRITING
-        case .variorum: return "text.book.closed"
-        #endif
         case .plugin: return "puzzlepiece.extension"
         }
     }
@@ -81,12 +63,6 @@ enum SideTab: String, CaseIterable, Identifiable {
         allCases.filter { t in
             switch t {
             case .helpers, .review, .notices: return true
-            #if !NOMAIL
-            case .mail: return true
-            #endif
-            #if !NOWRITING
-            case .variorum: return variorum
-            #endif
             default: return false
             }
         }
@@ -174,17 +150,8 @@ extension Store {
     /// is installed or set up (VariorumTab.swift). Until the core has said,
     /// a Variorum tab kept from the last run stays.
     var sideTabs: [SideTab] {
-        #if !NOWRITING
-        let known = knowsFeatures ? (canVariorum ? variorum.wanted : false) : nil
-        let tabs = SideTab.built(variorum: known ?? (side.tab == .variorum))
-        #else
         let tabs = SideTab.built(variorum: false)
-        #endif
-        #if !NOMAIL
-        return tabs.filter { $0 != .mail || mailShown }
-        #else
         return tabs
-        #endif
     }
 
     /// Moves the right sidebar off a tab the core no longer serves, to the
@@ -488,11 +455,6 @@ struct RightSidebar: View {
         case .notices:
             let n = store.unseenErrors
             return (n, n > 0)
-        #if !NOMAIL
-        case .mail:
-            // Unread mail is news, not something that needs you: never red.
-            return (store.mailShown ? store.mail.unread : 0, false)
-        #endif
         default:
             return (0, false)
         }
@@ -502,17 +464,6 @@ struct RightSidebar: View {
         switch store.side.tab {
         case .review: ReviewTab()
         case .notices: NoticesTab()
-        #if !NOWRITING
-        case .variorum: VariorumTab()
-        #endif
-        #if !NOMAIL
-        case .mail:
-            if store.mailShown {
-                MailTab()
-            } else {
-                SideNote(title: "Mail is off", text: "The mail plugin is off, or this \(Brand.name) was built without it: Plugins › Mail turns it on.")
-            }
-        #endif
         case .plugin: PluginPaneTab()
         default: YourHelpersTab()
         }

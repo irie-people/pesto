@@ -1,5 +1,3 @@
-//go:build nojammin
-
 package config
 
 // JamminBuilt says whether this build has the jammin plugin (DESIGN

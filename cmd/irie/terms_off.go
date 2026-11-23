@@ -1,5 +1,3 @@
-//go:build noterms
-
 package main
 
 // This build leaves Terms in short out (go build -tags noterms, DESIGN

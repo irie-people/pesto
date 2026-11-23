@@ -1,5 +1,3 @@
-//go:build noprivacy
-
 package main
 
 // This build leaves the privacy plugin out (go build -tags noprivacy,

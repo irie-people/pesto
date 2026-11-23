@@ -1,5 +1,3 @@
-//go:build nomarkets
-
 package config
 
 // MarketsBuilt says whether this build has the markets plugin (DESIGN

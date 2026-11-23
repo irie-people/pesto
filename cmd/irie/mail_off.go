@@ -1,5 +1,3 @@
-//go:build nomail
-
 package main
 
 // This build leaves the mail plugin out (go build -tags nomail, DESIGN

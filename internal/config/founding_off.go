@@ -1,5 +1,3 @@
-//go:build nofounding
-
 package config
 
 // FoundingBuilt says whether this build has the founding plugin (DESIGN

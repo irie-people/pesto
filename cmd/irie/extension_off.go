@@ -1,5 +1,3 @@
-//go:build noextension
-
 package main
 
 // This build leaves the browser extension plugin out (go build -tags

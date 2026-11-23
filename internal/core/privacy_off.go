@@ -1,5 +1,3 @@
-//go:build noprivacy
-
 package core
 
 import (

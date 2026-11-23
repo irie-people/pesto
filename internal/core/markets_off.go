@@ -1,5 +1,3 @@
-//go:build nomarkets
-
 package core
 
 import "github.com/irie-people/irie/internal/ipc"

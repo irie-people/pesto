@@ -1,5 +1,3 @@
-//go:build nowriting
-
 package core
 
 import (

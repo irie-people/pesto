@@ -1,5 +1,3 @@
-//go:build noextension
-
 package config
 
 // ExtensionBuilt says whether this build has the browser extension plugin

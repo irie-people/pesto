@@ -1,5 +1,3 @@
-//go:build noyoink
-
 package main
 
 // This build leaves the yoink plugin out (go build -tags noyoink, DESIGN

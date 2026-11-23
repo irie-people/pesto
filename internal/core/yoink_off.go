@@ -1,5 +1,3 @@
-//go:build noyoink
-
 package core
 
 import "github.com/irie-people/irie/internal/ipc"

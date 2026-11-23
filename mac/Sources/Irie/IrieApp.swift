@@ -66,12 +66,6 @@ struct IrieApp: App {
             LearnCommands(store: store, menu: store.menu)
             IrieCommands(store: store, menu: store.menu)
             PluginCommands(store: store, menu: store.menu)
-            #if !NOMARKETS
-            MarketsCommands(menu: store.menu)
-            #endif
-            #if !NOMAIL
-            MailCommands(menu: store.menu)
-            #endif
         }
         // Help > Learning Resources and Glossary (Learn.swift).
         Window("Learn", id: LearnWindow.id) {
@@ -86,29 +80,6 @@ struct IrieApp: App {
                 .environment(store)
         }
         .defaultSize(ThemeMaker.size)
-        #if !NOMARKETS
-        // Window › Markets (⇧⌘M) and :markets: the markets plugin's map
-        // (Markets.swift). Its item shows only while the plugin is on, so
-        // the one SwiftUI would add for the window goes.
-        Window("Markets", id: MarketsWindow.id) {
-            MarketsWindow()
-                .environment(store)
-        }
-        .defaultSize(width: 1280, height: 820)
-        .commandsRemoved()
-        #endif
-        #if !NOMAIL
-        // Window › Mail (⇧⌘E): the mail plugin's accounts, list and message
-        // side by side (MailViews.swift). As with Markets, its item shows
-        // only while the plugin is on.
-        Window("Mail", id: MailWindow.id) {
-            MailWindow()
-                .environment(store)
-                .frame(minWidth: 760, minHeight: 420)
-        }
-        .defaultSize(width: 1080, height: 700)
-        .commandsRemoved()
-        #endif
         // Irie > Settings… (⌘,): every preference in one place (Settings.swift).
         Settings {
             SettingsView(model: store.settings)
@@ -304,9 +275,6 @@ extension Notification.Name {
 @MainActor
 struct ContentView: View {
     @Environment(Store.self) private var store
-    #if !NOMARKETS
-    @Environment(\.openWindow) private var openWindow
-    #endif
     @State private var keys = KeyRouter()
     @AppStorage(Palette.defaultsKey) private var theme = Palette.standard.id
 
@@ -381,10 +349,6 @@ struct ContentView: View {
         .onChange(of: theme) { store.sendTheme(theme) }
         // Reversed, the sidebar goes to the right, and back (Store.reversed).
         .onChange(of: store.reversed) { _, on in WindowPanes.setReversed(on) }
-        #if !NOMARKETS
-        // :markets in a task bar opens the Markets window (Markets.swift).
-        .onReceive(NotificationCenter.default.publisher(for: .irieMarkets)) { _ in openWindow(id: MarketsWindow.id) }
-        #endif
     }
 }
 

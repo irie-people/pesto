@@ -1,5 +1,3 @@
-//go:build nofounding
-
 package main
 
 import (

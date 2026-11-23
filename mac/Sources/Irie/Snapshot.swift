@@ -113,12 +113,7 @@ enum Snapshot {
             // Variorum's note in both modes and half set up, last, since
             // its tab shows only once Variorum is there.
             store.ownHelpers = Fixture.helpers
-            #if !NOWRITING
-            let variorum: [(String, SideTab, Bool)] = [("side-variorum", SideTab.variorum, false), ("side-variorum-dark", SideTab.variorum, true),
-                                                       ("side-variorum-setup", SideTab.variorum, false)]
-            #else
             let variorum: [(String, SideTab, Bool)] = []
-            #endif
             for (base, tab, dark) in [("side-helpers", SideTab.helpers, false), ("side-helpers-dark", SideTab.helpers, true),
                                       ("side-review", SideTab.review, false),
                                       ("side-notices", SideTab.notices, false), ("side-notices-dark", SideTab.notices, true),
@@ -128,15 +123,6 @@ enum Snapshot {
                 let narrow = base == "side-narrow"
                 store.side = SideState(open: true, width: narrow ? SideState.minWidth : SideState.startWidth, tab: tab)
                 if narrow { store.noticesSeen = .distantPast }
-                #if !NOWRITING
-                if tab == .variorum {
-                    // No notice on show, and none unseen.
-                    store.notice = nil
-                    store.noticesSeen = Date()
-                    store.variorum.useFixture(base == "side-variorum-setup" ? VariorumFixture.setup : VariorumFixture.ready,
-                                              session: Fixture.selected, fresh: VariorumFixture.fresh, opened: VariorumFixture.opened)
-                }
-                #endif
                 if tab == .notices || narrow {
                     // The notices kept, and an error on show at the top of
                     // the working area, clear of the task bar.
@@ -154,40 +140,6 @@ enum Snapshot {
                 try rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: dir).appendingPathComponent(name))
                 print(name)
             }
-            #if !NOMAIL
-            // Mail (MailViews.swift): its tab with the list and with a
-            // message open, its window, and its two sheets.
-            for (base, opening, dark) in [("side-mail", false, false), ("side-mail-dark", false, true), ("side-mail-reading", true, false)] {
-                store.mail.loadFixture(opening: opening)
-                store.side = SideState(open: true, width: SideState.startWidth, tab: .mail)
-                UserDefaults.standard.setVolatileDomain([Palette.defaultsKey: Palette.standard.id, "showTerminal": true, DetailsPanel.heightKey: DetailsPanel.compact, DetailsPanel.minimizedKey: false], forName: UserDefaults.argumentDomain)
-                let (rep, _) = window(ContentView().environment(store), dark: dark, width: 1500, height: 720)
-                let name = base + ".png"
-                try rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: dir).appendingPathComponent(name))
-                print(name)
-            }
-            for dark in [false, true] {
-                store.mail.loadFixture(opening: true)
-                let (rep, _) = window(MailWindow().environment(store), dark: dark, width: 1080, height: 700)
-                let name = "mail-window-\(dark ? "dark" : "light").png"
-                try rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: dir).appendingPathComponent(name))
-                print(name)
-            }
-            do {
-                let (add, _) = window(AddMailAccount().environment(store), dark: false, width: 480, height: 330)
-                try add.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: dir).appendingPathComponent("mail-add-account.png"))
-                print("mail-add-account.png")
-                store.mail.loadFixture(opening: true)
-                store.mail.reply()
-                if let c = store.mail.composing {
-                    let (rep, _) = window(MailComposer(draft: c).environment(store), dark: false, width: 560, height: 520)
-                    try rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: dir).appendingPathComponent("mail-compose.png"))
-                    print("mail-compose.png")
-                }
-                store.mail.composing = nil
-                store.mail.loadFixture()
-            }
-            #endif
             // The question a close asks first when commits of a card's work
             // have not landed (Closing.swift): of one card, and of a close of
             // five, two of them not landed.
@@ -229,28 +181,6 @@ enum Snapshot {
             }
             PluginPaneFixture.down = []
             PluginPaneFixture.signIn = []
-            #if !NOYOINK
-            // Yoink's tab (YoinkViews.swift): its downloads as they go, in
-            // both modes, a link's sizes to pick from, and what it lacks
-            // while it lacks it.
-            let yoinkPlugin = try Wire.decoder.decode(PluginInfo.self, from: Data(Fixture.yoinkPlugin.utf8))
-            for (base, picking, dark, needs) in [("side-yoink", false, false, false), ("side-yoink-dark", false, true, false),
-                                                 ("side-yoink-picking", true, false, false), ("side-yoink-needs", false, false, true)] {
-                var plugin = yoinkPlugin
-                if needs {
-                    plugin.parts[0].state = "needs"
-                    plugin.parts[0].detail = "It needs ffmpeg, to merge a video with its sound and to make mp3s: `brew install ffmpeg`."
-                }
-                store.plugins = withPanes.plugins + [plugin]
-                store.yoink.loadFixture(picking: picking)
-                store.side = SideState(open: true, width: SideState.startWidth, tab: .plugin, pane: "yoink.yoink")
-                UserDefaults.standard.setVolatileDomain([Palette.defaultsKey: Palette.standard.id, "showTerminal": true, DetailsPanel.heightKey: DetailsPanel.compact, DetailsPanel.minimizedKey: false], forName: UserDefaults.argumentDomain)
-                let (rep, _) = window(ContentView().environment(store), dark: dark, width: 1500, height: 720)
-                let name = base + ".png"
-                try rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: dir).appendingPathComponent(name))
-                print(name)
-            }
-            #endif
             // The Chat tab (ChatViews.swift): the drafts waiting and each
             // account's channels in both modes, a channel open with the note
             // of text Discord hides, and the tab before any account.
@@ -266,53 +196,6 @@ enum Snapshot {
                 try rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: dir).appendingPathComponent(name))
                 print(name)
             }
-            #if !NOFOUNDING
-            // The Charters tab (Founding.swift): a search's passage in the
-            // Constitution, found whatever its spelling, in both modes.
-            let foundingPlugin = try Wire.decoder.decode(PluginInfo.self, from: Data(Fixture.foundingPlugin.utf8))
-            for (base, dark) in [("side-founding", false), ("side-founding-dark", true)] {
-                store.plugins = withPanes.plugins + [foundingPlugin]
-                store.founding.loadFixture()
-                store.side = SideState(open: true, width: SideState.startWidth, tab: .plugin, pane: "founding.founding")
-                UserDefaults.standard.setVolatileDomain([Palette.defaultsKey: Palette.standard.id, "showTerminal": true, DetailsPanel.heightKey: DetailsPanel.compact, DetailsPanel.minimizedKey: false], forName: UserDefaults.argumentDomain)
-                let (rep, _) = window(ContentView().environment(store), dark: dark, width: 1500, height: 720)
-                let name = base + ".png"
-                try rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: dir).appendingPathComponent(name))
-                print(name)
-            }
-            #endif
-            #if !NOJAMMIN
-            // Jammin's tab (JamminViews.swift): Spotify playing and Apple
-            // Music paused, then Spotify waiting to be linked, each in both
-            // modes; then the sheet that links Spotify, with a plain page
-            // for Spotify's. Every name is made up, the artwork a gradient.
-            let jamminPlugin = try Wire.decoder.decode(PluginInfo.self, from: Data(Fixture.jamminPlugin.utf8))
-            for (base, scene, dark) in [("side-jammin", "spotify", false), ("side-jammin-dark", "spotify", true),
-                                        ("side-jammin-music", "music", false), ("side-jammin-music-dark", "music", true),
-                                        ("side-jammin-link", "spotify-link", false), ("side-jammin-link-dark", "spotify-link", true),
-                                        ("side-jammin-files", "files", false), ("side-jammin-spotify-app-dark", "spotify-app", true)] {
-                var plugin = jamminPlugin
-                if scene == "spotify-link" {
-                    plugin.parts[0].state = "needs"
-                    plugin.parts[0].detail = "No Spotify app yet: make one at Spotify's dashboard, then Link Spotify in the Jammin tab takes its Client ID."
-                }
-                store.plugins = withPanes.plugins + [plugin]
-                store.jammin.loadFixture(scene)
-                store.side = SideState(open: true, width: SideState.startWidth, tab: .plugin, pane: "jammin.tab")
-                UserDefaults.standard.setVolatileDomain([Palette.defaultsKey: Palette.standard.id, "showTerminal": true, DetailsPanel.heightKey: DetailsPanel.compact, DetailsPanel.minimizedKey: false], forName: UserDefaults.argumentDomain)
-                let (rep, _) = window(ContentView().environment(store), dark: dark, width: 1500, height: 1000)
-                let name = base + ".png"
-                try rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: dir).appendingPathComponent(name))
-                print(name)
-            }
-            for (base, step, dark) in [("jammin-link-app", 1, false), ("jammin-link-app-dark", 1, true), ("jammin-link-signin", 2, false)] {
-                let sheet = JamminSignInSheet(fixture: true, step: step, clientID: step == 1 ? "0123456789abcdef0123456789abcdef" : "")
-                let (rep, _) = window(sheet.environment(store), dark: dark, width: 840, height: 700)
-                let name = base + ".png"
-                try rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: dir).appendingPathComponent(name))
-                print(name)
-            }
-            #endif
             store.plugins = []
             store.bundles = []
             store.side = SideState()
@@ -338,9 +221,6 @@ enum Snapshot {
                 ("panes-browser", .browser, false, 1500, false), ("panes-narrow", .terminal, false, 1100, false),
                 ("panes-blank", nil, false, 1500, false),
             ]
-            #if !NOMAIL
-            panes.append(("panes-mail", .mail, false, 1500, false))
-            #endif
             panes += [
                 ("panes-folded", .browser, false, 1500, true), ("panes-folded-dark", .browser, true, 1500, true),
                 // A session's own helpers and controls, once tabs of the right
@@ -1230,20 +1110,6 @@ enum Fixture {
       ]}]}
     """#
 
-    #if !NOYOINK
-    /// The Yoink plugin, on and ready, with its tab.
-    static let yoinkPlugin = #"""
-    {"name": "yoink", "title": "Yoink", "on": true,
-     "summary": "Download a video, or its sound as an mp3, from a link to YouTube, Vimeo, Wikimedia Commons and the other sites yt-dlp knows, into your Downloads folder.",
-     "parts": [
-      {"name": "yoink", "title": "Video downloads", "on": true, "state": "ready",
-       "detail": "Ready: yt-dlp 2026.10.26 through uvx, with ffmpeg; downloads land in ~/Downloads.",
-       "summary": "Paste a link in the Yoink tab, or give it to :yoink in any task bar, and pick a size or the sound alone.",
-       "pane": {"id": "yoink.yoink", "title": "Yoink", "icon": "arrow.down.circle", "kind": "yoink"}}
-     ]}
-    """#
-    #endif
-
     /// The chat plugin, on, with its tab on its Discord part.
     static let chatPlugin = #"""
     {"name": "chat", "title": "Chat", "on": true,
@@ -1257,37 +1123,6 @@ enum Fixture {
       {"name": "agents", "title": "Chat for agents", "on": true, "state": "ready", "switch": "chat.agents", "detail": "Ready: agents write drafts that wait for you to send.", "summary": "Agents write drafts that wait for you to send."}
      ]}
     """#
-
-    #if !NOFOUNDING
-    /// The founding plugin, on and ready, with its tab.
-    static let foundingPlugin = #"""
-    {"name": "founding", "title": "Charters", "on": true,
-     "summary": "Thirty-eight texts of rights, word for word from the bodies that keep them and checked against other copies, from Magna Carta to India's Right to Information Act.",
-     "parts": [
-      {"name": "founding", "title": "The charters", "on": true, "state": "ready",
-       "detail": "Ready: 38 texts in the Charters tab, and the founding-documents skill in every session.",
-       "summary": "Read them in the Charters tab, search them whatever the spelling, and follow how each drew on the ones before it.",
-       "pane": {"id": "founding.founding", "title": "Charters", "icon": "building.columns", "kind": "founding"}}
-     ]}
-    """#
-    #endif
-
-    #if !NOJAMMIN
-    /// The Jammin plugin, on, its Spotify part ready, with its tab.
-    static let jamminPlugin = #"""
-    {"name": "jammin", "title": "Jammin", "on": true,
-     "summary": "Your music beside your sessions: what plays on Spotify or in the Music app, its controls, your playlists and a search.",
-     "parts": [
-      {"name": "spotify", "title": "Spotify", "on": true, "state": "ready",
-       "detail": "Ready: signed in to Spotify as alice, through your Spotify app.",
-       "summary": "Spotify, through a Spotify app of yours.",
-       "pane": {"id": "jammin.tab", "title": "Jammin", "icon": "radio", "kind": "jammin"}},
-      {"name": "music", "title": "Apple Music", "on": true, "state": "ready",
-       "detail": "Ready: the Music app on this Mac.",
-       "summary": "The Music app on this Mac."}
-     ]}
-    """#
-    #endif
 
     /// The config op's answer for a file with a profile, repos, the jot dog
     /// and Mikael's good of its own, as the core writes it (config.Tree).

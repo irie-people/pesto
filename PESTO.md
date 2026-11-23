@@ -9,7 +9,7 @@ Pesto is a company's copy of Irie made for one job: testing how Irie ports to a 
 | Variables, tmux server | `PESTO_SESSION`, `PESTO_SOCKET`, ...; tmux `-L pesto` |
 | Mac app | `~/Applications/Pesto.app`, `com.example.pesto` |
 | Bar | tips, not cheer |
-| Plugins left out | privacy, writing, markets, mail, Terms in short, browser extension, Yoink, founding documents, Jammin: not built, and not in the source (`tools/prune`) |
+| Plugins left out | privacy, writing, markets, mail, Terms in short, browser extension, Yoink, founding documents, Jammin: not built, and their code pruned from the source (`tools/prune`) |
 | Arch agents | Guard, Priority, Medic and Planner (Irie's Mikael, Gabriel, Raphael and Raguel), each spoken of as "it" |
 | VPN | Cisco Secure Client only, at vpn.example.com |
 

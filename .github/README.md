@@ -6,7 +6,7 @@ Everything here is Irie's code, under Irie's licence (Apache-2.0), with two chan
 
 - its own name, command (`pesto`), folders, variables, tmux server and bundle ID (`com.example.pesto`);
 - tips under the terminal rather than words of encouragement;
-- none of the personal plugins, in its builds or its source (privacy, writing, markets, mail, Terms in short, the browser extension, Yoink, the founding documents, Jammin);
+- none of the personal plugins (privacy, writing, markets, mail, Terms in short, the browser extension, Yoink, the founding documents, Jammin). Their code is out of its builds and its source; what stays is the settings and messages Irie's core shares with them, and stand-ins that say a plugin isn't in this build;
 - arch agents named for their work: Guard, Priority, Medic and Planner, each spoken of as "it";
 - one VPN, Cisco Secure Client.
 

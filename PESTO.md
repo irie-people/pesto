@@ -12,13 +12,13 @@ Pesto is a company's copy of Irie made for one job: testing how Irie ports to a 
 | Plugins left out | privacy, writing, markets, mail, Terms in short, browser extension, Yoink, founding documents, Jammin |
 | VPN | Cisco Secure Client only, at vpn.example.com |
 
-This clone is the copy's source. It fetches from the Irie checkout beside it (remote `irie`) and pushes nowhere: `git push` fails on purpose.
+This clone is the copy's source, published as a work in progress at github.com/irie-people/pesto (remote `origin`). It takes Irie from the remote `irie`, which it never pushes to: on the owner's Mac that is the Irie checkout beside it, whose `live` branch is the installed build; elsewhere, github.com/irie-people/irie and its `main`.
 
 ## Bring it up to Irie's live build
 
     sh pesto.sh
 
-It merges Irie's `live`, renames again where Irie's brand file changed, runs the copy's own checks (all of Irie's tests, as Pesto) and installs `pesto` and, once it is there, Pesto.app, with `tools/live.sh`. The first time, `sh pesto.sh --app` also builds Pesto.app and puts it in `~/Applications`. Nothing starts by itself.
+It merges Irie's `live` (or `main`, from Irie's public repository), renames again where Irie's brand file changed, runs the copy's own checks (all of Irie's tests, as Pesto) and installs `pesto` and, once it is there, Pesto.app, with `tools/live.sh`. The first time, `sh pesto.sh --app` also builds Pesto.app and puts it in `~/Applications`. Nothing starts by itself.
 
 ## Open it
 

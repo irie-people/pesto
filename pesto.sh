@@ -13,13 +13,17 @@ cd "$(dirname "$0")"
 export TZ=UTC
 tagline="Fresh basil for your agents."
 
-git fetch -q irie live
-if ! git merge -q --signoff --no-edit irie/live; then
+# The Irie checkout beside this one has live, the installed build; Irie's
+# public repository has main.
+ref=live
+git ls-remote --exit-code --heads irie live >/dev/null 2>&1 || ref=main
+git fetch -q irie "$ref"
+if ! git merge -q --signoff --no-edit "irie/$ref"; then
 	# Only the brand's two files may conflict: take Irie's and rename them
 	# again.
 	other=$(git diff --name-only --diff-filter=U | grep -v -e '^internal/brand/brand.go$' -e '^mac/Sources/Irie/Brand.swift$' || true)
 	if [ -n "$other" ]; then
-		echo "pesto.sh: the merge of Irie's live conflicts in $other; merge it by hand" >&2
+		echo "pesto.sh: the merge of Irie's $ref conflicts in $other; merge it by hand" >&2
 		exit 1
 	fi
 	git checkout --theirs internal/brand/brand.go mac/Sources/Irie/Brand.swift

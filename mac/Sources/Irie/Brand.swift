@@ -5,32 +5,32 @@
 /// The product's names, as internal/brand has them.
 enum Brand {
     /// The product's name as a person reads it.
-    static let name = "Irie"
+    static let name = "Pesto"
     /// Its name for computers: the command, its folders and its socket's.
-    static let slug = "irie"
+    static let slug = "pesto"
     /// The start of its environment variables' names.
-    static let envPrefix = "IRIE"
+    static let envPrefix = "PESTO"
     /// The app's bundle identifier.
-    static let bundleID = "io.github.irie-hq.irie"
+    static let bundleID = "com.example.pesto"
     /// The guide's address, ending in a slash.
-    static let site = "https://irie-people.github.io/irie/"
+    static let site = "https://pesto.example.com/"
     /// The source's address.
-    static let repo = "https://github.com/irie-people/irie"
+    static let repo = "https://example.com/pesto"
     /// The line under the name on the welcome.
-    static let tagline = "Everything irie."
+    static let tagline = "Fresh basil for your agents."
     /// The arch agents' names as a person reads them; raffi and ragu are
     /// Raphael's and Raguel's short names.
-    static let mikael = "Mikael"
-    static let gabriel = "Gabriel"
-    static let raphael = "Raphael"
-    static let raffi = "Raffi"
-    static let raguel = "Raguel"
-    static let ragu = "Ragu"
+    static let mikael = "Guard"
+    static let gabriel = "Priority"
+    static let raphael = "Medic"
+    static let raffi = "Medic"
+    static let raguel = "Planner"
+    static let ragu = "Planner"
     /// How the texts speak of an arch agent: he, him and his, or it, it and
     /// its in a copy whose agents are tools.
-    static let he = "he"
-    static let him = "him"
-    static let his = "his"
+    static let he = "it"
+    static let him = "it"
+    static let his = "its"
 
     /// The environment variable called name, such as env("CORE_SOCKET").
     static func env(_ name: String) -> String { envPrefix + "_" + name }

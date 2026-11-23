@@ -1,18 +1,21 @@
 # Pesto
 
-**A work in progress.** Pesto is [Irie](https://github.com/irie-people/irie), renamed the way a company would rename it for a product of its own. It was made to test how well Irie ports to a company, and it is not a product.
+Pesto is [Irie](https://github.com/irie-people/irie), renamed the way a company would rename it for a product of its own. It was made to test how well Irie ports to a company. It is a test copy, not a product.
 
-Everything here is Irie's code, under Irie's licence (Apache-2.0), with one change: `internal/brand/brand.go`, rewritten by Irie's `tools/rebrand.sh`. That rename gives Pesto:
+Everything here is Irie's code, under Irie's licence (Apache-2.0), with two changes made by Irie's own tools: `tools/rebrand.sh` rewrote `internal/brand/brand.go`, and `tools/prune` took out the code of every plugin Pesto leaves out. That gives Pesto:
 
 - its own name, command (`pesto`), folders, variables, tmux server and bundle ID (`com.example.pesto`);
 - tips under the terminal rather than words of encouragement;
-- none of the personal plugins (privacy, writing, markets, mail, Terms in short, the browser extension, Yoink, the founding documents, Jammin);
+- none of the personal plugins, in its builds or its source (privacy, writing, markets, mail, Terms in short, the browser extension, Yoink, the founding documents, Jammin);
+- arch agents named for their work: Guard, Priority, Medic and Planner, each spoken of as "it";
 - one VPN, Cisco Secure Client.
 
-## What it has shown so far
+## What it showed
 
-- Texts, cards, help and setup lines in Irie that assumed Irie's own names. They are fixed in Irie now.
-- Irie's tests pass under another name as they do under Irie's. Irie's CI now checks this on every push, with a copy renamed to Pesto.
+- Texts, cards, help and setup lines in Irie that assumed Irie's own names. They are fixed in Irie.
+- Irie's tests pass under another name as they do under Irie's. Irie's CI checks this on every push, with a copy renamed to Pesto.
+- A copy can leave a plugin out of its source, not only its builds. Each plugin's Go and Swift code is marked as its own, and Irie's `tools/prune` takes out what a copy's tags leave out.
+- A copy can name the arch agents for their work.
 - Pesto runs on a Linux server beside an Irie, with sessions of its own on Claude Code.
 - What is still open, such as two copies sharing one machine, is in Irie's [company copies proposal](https://github.com/irie-people/irie/blob/main/docs/proposals/company-copies.md).
 

@@ -9,10 +9,11 @@ Pesto is a company's copy of Irie made for one job: testing how Irie ports to a 
 | Variables, tmux server | `PESTO_SESSION`, `PESTO_SOCKET`, ...; tmux `-L pesto` |
 | Mac app | `~/Applications/Pesto.app`, `com.example.pesto` |
 | Bar | tips, not cheer |
-| Plugins left out | privacy, writing, markets, mail, Terms in short, browser extension, Yoink, founding documents, Jammin |
+| Plugins left out | privacy, writing, markets, mail, Terms in short, browser extension, Yoink, founding documents, Jammin: not built, and not in the source (`tools/prune`) |
+| Arch agents | Guard, Priority, Medic and Planner (Irie's Mikael, Gabriel, Raphael and Raguel), each spoken of as "it" |
 | VPN | Cisco Secure Client only, at vpn.example.com |
 
-This clone is the copy's source, published as a work in progress at github.com/irie-people/pesto (remote `origin`). It takes Irie from the remote `irie`, which it never pushes to: on the owner's Mac that is the Irie checkout beside it, whose `live` branch is the installed build; elsewhere, github.com/irie-people/irie and its `main`.
+This clone is the copy's source, published at github.com/irie-people/pesto (remote `origin`). It takes Irie from the remote `irie`, which it never pushes to: on the owner's Mac that is the Irie checkout beside it, whose `live` branch is the installed build; elsewhere, github.com/irie-people/irie and its `main`.
 
 ## Bring it up to Irie's live build
 

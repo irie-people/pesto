@@ -5,19 +5,32 @@
 /// The product's names, as internal/brand has them.
 enum Brand {
     /// The product's name as a person reads it.
-    static let name = "Pesto"
+    static let name = "Irie"
     /// Its name for computers: the command, its folders and its socket's.
-    static let slug = "pesto"
+    static let slug = "irie"
     /// The start of its environment variables' names.
-    static let envPrefix = "PESTO"
+    static let envPrefix = "IRIE"
     /// The app's bundle identifier.
-    static let bundleID = "com.example.pesto"
+    static let bundleID = "io.github.irie-hq.irie"
     /// The guide's address, ending in a slash.
-    static let site = "https://pesto.example.com/"
+    static let site = "https://irie-people.github.io/irie/"
     /// The source's address.
-    static let repo = "https://example.com/pesto"
+    static let repo = "https://github.com/irie-people/irie"
     /// The line under the name on the welcome.
-    static let tagline = "Fresh basil for your agents."
+    static let tagline = "Everything irie."
+    /// The arch agents' names as a person reads them; raffi and ragu are
+    /// Raphael's and Raguel's short names.
+    static let mikael = "Mikael"
+    static let gabriel = "Gabriel"
+    static let raphael = "Raphael"
+    static let raffi = "Raffi"
+    static let raguel = "Raguel"
+    static let ragu = "Ragu"
+    /// How the texts speak of an arch agent: he, him and his, or it, it and
+    /// its in a copy whose agents are tools.
+    static let he = "he"
+    static let him = "him"
+    static let his = "his"
 
     /// The environment variable called name, such as env("CORE_SOCKET").
     static func env(_ name: String) -> String { envPrefix + "_" + name }

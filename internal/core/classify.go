@@ -31,6 +31,7 @@ import (
 	"github.com/irie-people/irie/internal/config"
 	"github.com/irie-people/irie/internal/filetx"
 	"github.com/irie-people/irie/internal/ipc"
+	"github.com/irie-people/irie/internal/ledger"
 	"github.com/irie-people/irie/internal/localmodel"
 	"github.com/irie-people/irie/internal/route"
 )
@@ -39,7 +40,7 @@ const (
 	minLabels  = 30              // fewer embedded labelled tasks than this, or a class with none, and the words decide
 	embedWait  = 3 * time.Second // the longest a spawn waits for its task's embedding
 	embedRest  = time.Minute     // after a failed call, how long the server is left alone
-	embedKeep  = "30m"           // how long the server keeps the model loaded after a call
+	embedKeep  = "5m"            // how long the server keeps the model loaded after a call; a small one loads again in a second
 	embedBatch = 32              // labelled tasks embedded in one call
 	fillWait   = time.Minute     // the longest one such call may take
 )
@@ -188,7 +189,7 @@ func (c *Core) nearestClass(task string) (string, string, bool) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), embedWait)
 	defer cancel()
-	vs, err := c.embed(ctx, e, []string{task})
+	vs, err := c.embed(ctx, e, []string{task}, ledger.Route)
 	if err != nil {
 		return "", "", false
 	}
@@ -209,17 +210,21 @@ func gist(text string) string {
 	return strings.TrimSpace(string(r[:47])) + "…"
 }
 
-// embed embeds texts on route.embed's server, unless a call to it failed
-// in the last embedRest.
-func (c *Core) embed(ctx context.Context, e config.RouteEmbed, texts []string) ([][]float64, error) {
+// embed embeds texts on route.embed's server, for purpose (ledger.Route or
+// ledger.Find), unless a call to it failed in the last embedRest. Each call
+// goes into the ledger as one of Irie's own.
+func (c *Core) embed(ctx context.Context, e config.RouteEmbed, texts []string, purpose string) ([][]float64, error) {
 	l := &c.labels
 	l.mu.Lock()
 	rest := l.rest
 	l.mu.Unlock()
+	if err := c.modelsOff(e.URL); err != nil {
+		return nil, err // the router's words decide, and find's
+	}
 	if time.Now().Before(rest) {
 		return nil, errEmbedRests
 	}
-	vs, err := localmodel.Ollama{URL: e.URL, HTTP: c.http}.Embed(ctx, e.Model, texts, embedKeep)
+	vs, err := localmodel.Ollama{URL: e.URL, HTTP: c.http}.Embed(c.metered(ctx, purpose), e.Model, texts, embedKeep)
 	if err != nil {
 		l.mu.Lock()
 		l.rest = time.Now().Add(embedRest)
@@ -265,7 +270,7 @@ func (c *Core) fillLabels() {
 				return
 			}
 			ctx, cancel := context.WithTimeout(context.Background(), fillWait)
-			vs, err := c.embed(ctx, e, texts)
+			vs, err := c.embed(ctx, e, texts, ledger.Route)
 			cancel()
 			if err != nil {
 				return

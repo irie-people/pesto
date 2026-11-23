@@ -16,6 +16,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"time"
+
+	"github.com/irie-people/irie/internal/ledger"
 )
 
 // MinTokens is the least a request must write again of its conversation's
@@ -62,14 +64,14 @@ func (r Request) TTL() time.Duration {
 	return 0
 }
 
-// rates are the prices the request paid, and false for a model whose
-// prices are not known.
+// rates are the prices the request paid, those of the day it was made, and
+// false for a model whose prices are not known.
 func (r Request) rates() (Rates, bool) {
-	p, ok := Price(r.Model, r.Prompt())
+	p, ok := ledger.At(r.Model, r.Prompt(), r.At)
 	if !ok {
 		return Rates{}, false
 	}
-	return p.scaled(r.Speed, r.Geo), true
+	return p.Scaled(r.Speed, r.Geo), true
 }
 
 // writeCost is what tokens of the request's writes into the cache cost, at
@@ -201,7 +203,7 @@ func (c *Chain) Wake() (Wake, bool) {
 	r, life := c.last, c.life()
 	w := Wake{Last: r.At, TTL: life, Cold: r.At.Add(life), Tokens: r.Prompt() + r.Output, Model: r.Model}
 	if p, ok := Price(r.Model, w.Tokens); ok {
-		p = p.scaled(r.Speed, r.Geo)
+		p = p.Scaled(r.Speed, r.Geo)
 		rate := p.Write5m
 		if life >= time.Hour {
 			rate = p.Write1h
@@ -218,12 +220,39 @@ type Transcript struct {
 	chains map[string]*Chain
 }
 
-// Line is what one transcript line tells the meter.
+// Line is what one transcript line tells the meter, and the ledger
+// (internal/ledger) what its request cost.
 type Line struct {
 	Request
 	Usage   bool   // an assistant reply's line, with its usage
 	Agent   string // the helper whose part of the transcript it is in; "" for the conversation's own
 	Compact bool   // a compaction boundary: what follows starts a new context
+	// Searches are the request's web searches, which cost on top of its
+	// tokens (usage.server_tool_use.web_search_requests).
+	Searches int64
+	// Parts are the request's usage.iterations, each sub-inference or
+	// attempt with its tokens. The top level sums the reply's own
+	// ("message"), except after a server-side fallback, when it is the
+	// attempt that answered ("fallback_message") and each "message" is an
+	// attempt a model declined. A compaction's summary and the advisor
+	// tool's answer are only here.
+	Parts []Part
+	// Refused says the reply is a refusal (stop_reason "refusal"), and
+	// Refusal names its category, or that of the refusal a fallback block
+	// says the reply came after; "" for none or a null one.
+	Refused bool
+	Refusal string
+}
+
+// Part is one sub-inference of a request that its top-level usage leaves
+// out, from usage.iterations.
+type Part struct {
+	Type  string // its iteration's type, such as compaction or advisor_message
+	Model string // the model it ran on; "" for the request's own
+	// Its tokens, as a request's: input after the last cache breakpoint,
+	// written into the cache (of which into the hour's), read from it, and
+	// its output.
+	Input, Write, Write1h, Read, Output int64
 }
 
 // sidechain stands for a helper's part of a transcript that names no agent,
@@ -244,10 +273,13 @@ func ParseLine(b []byte) (Line, bool) {
 		Sidechain bool   `json:"isSidechain"`
 		AgentID   string `json:"agentId"`
 		Message   struct {
-			ID         string `json:"id"`
-			Model      string `json:"model"`
-			StopReason string `json:"stop_reason"`
-			Usage      *struct {
+			ID          string `json:"id"`
+			Model       string `json:"model"`
+			StopReason  string `json:"stop_reason"`
+			StopDetails *struct {
+				Category *string `json:"category"`
+			} `json:"stop_details"`
+			Usage *struct {
 				Input         int64 `json:"input_tokens"`
 				Output        int64 `json:"output_tokens"`
 				CacheWrite    int64 `json:"cache_creation_input_tokens"`
@@ -256,8 +288,22 @@ func ParseLine(b []byte) (Line, bool) {
 					W5m int64 `json:"ephemeral_5m_input_tokens"`
 					W1h int64 `json:"ephemeral_1h_input_tokens"`
 				} `json:"cache_creation"`
-				Speed string `json:"speed"`
-				Geo   string `json:"inference_geo"`
+				Speed      string `json:"speed"`
+				Geo        string `json:"inference_geo"`
+				ServerTool *struct {
+					Searches int64 `json:"web_search_requests"`
+				} `json:"server_tool_use"`
+				Iterations []struct {
+					Type          string `json:"type"`
+					Model         string `json:"model"`
+					Input         int64  `json:"input_tokens"`
+					Output        int64  `json:"output_tokens"`
+					CacheWrite    int64  `json:"cache_creation_input_tokens"`
+					CacheRead     int64  `json:"cache_read_input_tokens"`
+					CacheCreation *struct {
+						W1h int64 `json:"ephemeral_1h_input_tokens"`
+					} `json:"cache_creation"`
+				} `json:"iterations"`
 			} `json:"usage"`
 		} `json:"message"`
 	}
@@ -289,7 +335,53 @@ func ParseLine(b []byte) (Line, bool) {
 	if cc := u.CacheCreation; cc != nil {
 		l.Write1h, l.Write5m = cc.W1h, cc.W5m
 	}
+	if st := u.ServerTool; st != nil {
+		l.Searches = st.Searches
+	}
+	for _, it := range u.Iterations {
+		if it.Type == "" {
+			continue
+		}
+		p := Part{Type: it.Type, Model: it.Model, Input: it.Input, Write: it.CacheWrite, Read: it.CacheRead, Output: it.Output}
+		if cc := it.CacheCreation; cc != nil {
+			p.Write1h = cc.W1h
+		}
+		l.Parts = append(l.Parts, p)
+	}
+	l.Refused = rec.Message.StopReason == "refusal"
+	if sd := rec.Message.StopDetails; sd != nil && sd.Category != nil {
+		l.Refusal = *sd.Category
+	}
+	if l.Refusal == "" && bytes.Contains(b, []byte(`"fallback"`)) {
+		l.Refusal = fallbackCategory(b)
+	}
 	return l, true
+}
+
+// fallbackCategory is the category of the refusal a fallback block in a
+// reply line's content says it came after, as {"type": "fallback",
+// "trigger": {"type": "refusal", "category": "cyber"}}; "" for none. Only
+// a line that names a fallback is read again for it.
+func fallbackCategory(line []byte) string {
+	var rec struct {
+		Message struct {
+			Content []struct {
+				Type    string `json:"type"`
+				Trigger *struct {
+					Category *string `json:"category"`
+				} `json:"trigger"`
+			} `json:"content"`
+		} `json:"message"`
+	}
+	if json.Unmarshal(line, &rec) != nil {
+		return ""
+	}
+	for _, b := range rec.Message.Content {
+		if b.Type == "fallback" && b.Trigger != nil && b.Trigger.Category != nil {
+			return *b.Trigger.Category
+		}
+	}
+	return ""
 }
 
 // Read takes a line of the transcript and reports whether it rebuilt its

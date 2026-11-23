@@ -26,26 +26,26 @@ const (
 	// letters, digits, spaces, hyphens and full stops, starting with a
 	// letter or digit, with one space at most between words. Every place
 	// that shows it fits a name that long.
-	Name = "Pesto"
+	Name = "Irie"
 	// Slug is its name for computers: lower-case letters, digits and
 	// hyphens, starting with a letter.
-	Slug = "pesto"
+	Slug = "irie"
 	// EnvPrefix starts the name of each environment variable it sets or
 	// reads: Slug in capitals, with underscores for hyphens.
-	EnvPrefix = "PESTO"
+	EnvPrefix = "IRIE"
 	// BundleID is the Mac app's bundle identifier. The core uses it to find
 	// the app, and the lid's launchd job is named after it.
-	BundleID = "com.example.pesto"
+	BundleID = "io.github.irie-hq.irie"
 	// Site is the guide's address, ending in a slash.
-	Site = "https://pesto.example.com/"
+	Site = "https://irie-people.github.io/irie/"
 	// Repo is the source's address, for credits and links.
-	Repo = "https://example.com/pesto"
+	Repo = "https://github.com/irie-people/irie"
 	// Tagline is the line under the name on the Mac app's welcome.
-	Tagline = "Fresh basil for your agents."
+	Tagline = "Everything irie."
 	// Bar is what the strip under the terminal shows unless ui.bar says
 	// otherwise: "cheer", Irie's phrases of encouragement, or "tips",
 	// tips for those new to it.
-	Bar = "tips"
+	Bar = "cheer"
 	// Tags are the go build tags the scripts build it with (tools/live.sh,
 	// tools/release.sh), comma-separated: novpn, noprivacy, nowriting,
 	// nomarkets, nomail, nobitwarden, noterms, noextension, noyoink, nochat,
@@ -53,7 +53,7 @@ const (
 	// (DESIGN §4.17), as a company's copy may want.
 	// A build by hand passes them itself: go build -tags "$(tools/brand.sh
 	// --tags)" ./cmd/irie.
-	Tags = "noprivacy,nowriting,nomarkets,nomail,noterms,noextension,noyoink,nofounding,nojammin"
+	Tags = ""
 	// VPNs are the VPNs it drives (DESIGN §4.18), comma-separated, the
 	// first the default for vpn.provider: mullvad, tailscale, netbird,
 	// warp, nordvpn, cisco, globalprotect, forticlient, system and
@@ -61,11 +61,31 @@ const (
 	// all, Mullvad first. A company's copy names the VPN it approves, such
 	// as "cisco", so its people see and drive that VPN and no other; a
 	// copy that names any shows its VPN from the start (vpn.on).
-	VPNs = "cisco"
+	VPNs = ""
 	// VPNServer is vpn.server's default: the host, portal or VPN by name
 	// that a company's VPN connects to, so its people set nothing. "" =
 	// none.
-	VPNServer = "vpn.example.com"
+	VPNServer = ""
+
+	// Mikael, Gabriel, Raphael and Raguel are the arch agents' names as a
+	// person reads them (DESIGN §4.11), and Raffi and Ragu are Raphael's and
+	// Raguel's short names.
+	// A company's copy may name them after the work they do, as
+	// tools/rebrand.sh does: Guard, Priority, Medic and Planner. Their keys
+	// stay Irie's in every copy: [arch.gabriel], `irie ctl raphael`, the
+	// mikael profile.
+	Mikael  = "Mikael"
+	Gabriel = "Gabriel"
+	Raphael = "Raphael"
+	Raffi   = "Raffi"
+	Raguel  = "Raguel"
+	Ragu    = "Ragu"
+	// He, Him and His are how the texts speak of an arch agent: he, him and
+	// his, she, her and her, or, in a copy whose agents are tools, it, it
+	// and its.
+	He  = "he"
+	Him = "him"
+	His = "his"
 )
 
 // MaxName is the most characters Name may have.
@@ -108,7 +128,72 @@ func exe(name, slug string) string {
 // (irie-phone) or a tmux option (@irie_role), and so does a link other than
 // the guide's, such as the source's on github.com. The texts keep Irie's
 // names in the source, so they read as they are.
-func Text(s string) string { return text(s, Name, Slug, EnvPrefix, Site) }
+func Text(s string) string { return words(text(s, Name, Slug, EnvPrefix, Site), archNames) }
+
+// Arch is one of the arch agents' own texts made this product's: Text, and
+// he, him, his and himself, which speak of the agent there, as He, Him
+// and His say.
+func Arch(s string) string {
+	return words(Text(s), pronouns(He, Him, His))
+}
+
+// archNames pairs each arch agent's name in Irie's texts with this
+// product's.
+var archNames = [][2]string{{"Mikael", Mikael}, {"Gabriel", Gabriel}, {"Raphael", Raphael}, {"Raffi", Raffi}, {"Raguel", Raguel}, {"Ragu", Ragu}}
+
+// pronouns pairs Irie's pronouns for an arch agent, with and without a
+// capital, with these.
+func pronouns(he, him, his string) [][2]string {
+	self := map[string]string{"he": "himself", "she": "herself", "it": "itself"}[he]
+	var out [][2]string
+	for _, p := range [][2]string{{"he", he}, {"him", him}, {"his", his}, {"himself", self}} {
+		out = append(out, p, [2]string{upper(p[0]), upper(p[1])})
+	}
+	return out
+}
+
+func upper(s string) string {
+	if s == "" {
+		return s
+	}
+	return strings.ToUpper(s[:1]) + s[1:]
+}
+
+// words puts each pair's second for its first wherever the first is a
+// word of its own in s, in one pass: not joined to a letter, digit or
+// underscore on either side, so Raffi's is renamed and irie-gabriel is
+// not.
+func words(s string, pairs [][2]string) string {
+	same := true
+	for _, p := range pairs {
+		same = same && p[0] == p[1]
+	}
+	if same {
+		return s
+	}
+	part := func(c byte) bool {
+		return c == '_' || c >= 'a' && c <= 'z' || c >= 'A' && c <= 'Z' || c >= '0' && c <= '9'
+	}
+	var b strings.Builder
+	for i := 0; i < len(s); {
+		done := false
+		if i == 0 || !part(s[i-1]) {
+			for _, p := range pairs {
+				if p[0] != p[1] && strings.HasPrefix(s[i:], p[0]) && (i+len(p[0]) == len(s) || !part(s[i+len(p[0])])) {
+					b.WriteString(p[1])
+					i += len(p[0])
+					done = true
+					break
+				}
+			}
+		}
+		if !done {
+			b.WriteByte(s[i])
+			i++
+		}
+	}
+	return b.String()
+}
 
 // guide is the guide's address as Irie's own texts have it.
 const guide = "https://irie-people.github.io/irie/"
